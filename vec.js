@@ -56,9 +56,11 @@ class Vec {
         return {x: vec.y, y: vec.x};
     }
 
+    static distance(a, b) {
+        return Vec.length(Vec.subtract(a, b));
+    }
+
     static distance2(a, b) {
-        const dx = a.x - b.x;
-        const dy = a.y - b.y;
-        return dx ** 2 + dy ** 2;
+        return Vec.length2(Vec.subtract(a, b));
     }
 }
