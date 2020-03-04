@@ -19,8 +19,21 @@ const walls = [
 	{ position: { x: 0, y: 0 }, direction: { x: 0, y: 1 }, length: options.worldSize.y },
 	{ position: { x: options.worldSize.x, y: 0 }, direction: { x: 0, y: 1 }, length: options.worldSize.y },
 	{ position: { x: 0, y: options.worldSize.y }, direction: { x: 1, y: 0 }, length: options.worldSize.x },
-	{ position: { x: 100, y: 100 }, direction: { x: 1, y: 0 }, length: 100 },
-	{ position: { x: 100, y: 100 }, direction: { x: 0, y: 1 }, length: 100 },
+	{ position: { x: 2, y: 0 }, direction: { x: 0, y: 1 }, length: 3 },
+	{ position: { x: 2, y: 3 }, direction: { x: 1, y: 0 }, length: 3 },
+	{ position: { x: 5, y: 3 }, direction: { x: 0, y: -1 }, length: 3 },
+	{ position: { x: 0, y: 5 }, direction: { x: 1, y: 0 }, length: 7 },
+	{ position: { x: 7, y: 5 }, direction: { x: 0, y: -1 }, length: 3 },
+	{ position: { x: 7, y: 2 }, direction: { x: 1, y: 0 }, length: 1 },
+	{ position: { x: 8, y: 2 }, direction: { x: 0, y: 1 }, length: 6 },
+	{ position: { x: 8, y: 8 }, direction: { x: -1, y: 0 }, length: 2 },
+	{ position: { x: 6, y: 8 }, direction: { x: 0, y: -1 }, length: 2 },
+	{ position: { x: 6, y: 6 }, direction: { x: -1, y: 0 }, length: 5 },
+	{ position: { x: 1, y: 6 }, direction: { x: 0, y: 1 }, length: 2 },
+	{ position: { x: 1, y: 8 }, direction: { x: -1, y: 0 }, length: 2 },
+	{ position: { x: 3, y: 10 }, direction: { x: 0, y: -1 }, length: 2 },
+	{ position: { x: 3, y: 8 }, direction: { x: 1, y: 0 }, length: 1 },
+	{ position: { x: 4, y: 8 }, direction: { x: 0, y: 1 }, length: 2 },
 ];
 
 const holes = [
