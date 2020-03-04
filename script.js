@@ -54,10 +54,13 @@ const goal = {
 };
 
 let last = Date.now();
+let paused = false;
 const update = () => {
 	const delta = Date.now() - last;
 	last = Date.now();
-
+	if (paused)
+		return;
+	
 	for (let wall of walls) {
 		if (wallDist(wall, ball.position) < ball.radius) {
 			const d = ball.velocity;
@@ -132,6 +135,9 @@ const draw = () => {
 	ctx.restore();
 	requestAnimationFrame(draw);
 };
+
+window.addEventListener("focus", () => paused = false);
+window.addEventListener("blur", () => paused = true);
 
 canvas.width = options.worldSize.x * options.scale;
 canvas.height = options.worldSize.y * options.scale;
