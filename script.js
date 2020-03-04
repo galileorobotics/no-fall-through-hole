@@ -2,16 +2,19 @@ const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 const options = {
-	worldSize: { x: 400, y: 400 },
+	worldSize: { x: 10, y: 10 },
+	scale: 50,
+	lineWidth: 0.1,
 	ballColor: "blue",
 	holeColor: "brown",
 	wallColor: "orange",
+	goalColor: "green",
 };
 
 const ball = {
-	position: Vec.scale(options.worldSize, 0.5),
-	velocity: { x: -100, y: -121 },
-	radius: 10,
+	position: { x: 1, y: 1 },
+	velocity: { x: -2.3, y: 3 },
+	radius: 0.4,
 };
 
 const walls = [
@@ -37,12 +40,18 @@ const walls = [
 ];
 
 const holes = [
-	{ position: { x: 30, y: 90 }, radius: 20 },
-	{ position: { x: 40, y: 260 }, radius: 20 },
-	{ position: { x: 200, y: 30 }, radius: 20 },
-	{ position: { x: 340, y: 210 }, radius: 20 },
-	{ position: { x: 70, y: 160 }, radius: 20 },
+	{ x: 0.5, y: 4.5 },
+	{ x: 4, y: 3.5 },
+	{ x: 9.5, y: 0.5 },
+	{ x: 8.5, y: 5.5 },
+	{ x: 4.5, y: 9.5 },
+	{ x: 1.5, y: 7 },
 ];
+
+const goal = {
+	position: { x: 0, y: 8 },
+	size: { x: 2, y: 2 },
+};
 
 let last = Date.now();
 const update = () => {
@@ -54,15 +63,23 @@ const update = () => {
 			const d = ball.velocity;
 			const n = Vec.normalize(Vec.rotate(wall.direction, 0.5 * Math.PI));
 			ball.velocity = Vec.subtract(d, Vec.scale(n, 2 * Vec.dot(d, n)));
-			break;
+			ball.position = Vec.add(ball.position, Vec.scale(ball.velocity, 0.0001));
 		}
 	}
 
 	for (let hole of holes) {
-		if (Vec.distance(hole.position, ball.position) < hole.radius) {
+		if (Vec.distance(hole, ball.position) < ball.radius) {
 			alert("you lose");
 			location.reload();
 		}
+	}
+
+	if (ball.position.x > goal.position.x &&
+		ball.position.x < goal.position.x + goal.size.x &&
+		ball.position.y > goal.position.y &&
+		ball.position.y < goal.position.y + goal.size.y) {
+		alert("you win");
+		location.reload();
 	}
 
 	ball.velocity = Vec.scale(ball.velocity, 0.999);
@@ -79,22 +96,31 @@ const draw = () => {
 	update();
 
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	
+	ctx.save();
+
+	ctx.scale(options.scale, options.scale);
+
 	// Draw holes
 	for (let hole of holes) {
 		ctx.beginPath();
-		ctx.arc(hole.position.x, hole.position.y, hole.radius, 0, 2 * Math.PI);
+		ctx.arc(hole.x, hole.y, ball.radius, 0, 2 * Math.PI);
 		ctx.fillStyle = options.holeColor;
 		ctx.fill();
 	}
+
+	// Draw goal
+	ctx.fillStyle = options.goalColor;
+	ctx.fillRect(goal.position.x, goal.position.y, goal.size.x, goal.size.y);
 
 	// Draw ball
 	ctx.beginPath();
 	ctx.arc(ball.position.x, ball.position.y, ball.radius, 0, 2 * Math.PI);
 	ctx.fillStyle = options.ballColor;
 	ctx.fill();
-	
+
 	// Draw walls
+	ctx.lineCap = "round";
+	ctx.lineWidth = options.lineWidth;
 	for (let wall of walls) {
 		ctx.beginPath();
 		ctx.moveTo(wall.position.x, wall.position.y);
@@ -103,9 +129,10 @@ const draw = () => {
 		ctx.stroke();
 	}
 
+	ctx.restore();
 	requestAnimationFrame(draw);
 };
 
-canvas.width = options.worldSize.x;
-canvas.height = options.worldSize.y;
+canvas.width = options.worldSize.x * options.scale;
+canvas.height = options.worldSize.y * options.scale;
 draw();
