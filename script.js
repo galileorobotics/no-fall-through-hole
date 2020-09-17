@@ -13,9 +13,11 @@ const options = {
 
 const ball = {
 	position: { x: 1, y: 1 },
-	velocity: { x: -2.3, y: 3 },
+	velocity: { x: 0, y: 0 },
 	radius: 0.4,
 };
+
+let gravity = { x: 0, y: 0 };
 
 const walls = [
 	{ position: { x: 0, y: 0 }, direction: { x: 1, y: 0 }, length: options.worldSize.x },
@@ -60,7 +62,7 @@ const update = () => {
 	last = Date.now();
 	if (paused)
 		return;
-	
+
 	for (let wall of walls) {
 		if (wallDist(wall, ball.position) < ball.radius) {
 			const d = ball.velocity;
@@ -85,7 +87,8 @@ const update = () => {
 		location.reload();
 	}
 
-	ball.velocity = Vec.scale(ball.velocity, 0.999);
+	ball.velocity = Vec.add(ball.velocity, Vec.scale(gravity, delta / 1000));
+	ball.velocity = Vec.scale(ball.velocity, 0.98);
 	ball.position = Vec.add(ball.position, Vec.scale(ball.velocity, delta / 1000));
 };
 
@@ -143,3 +146,11 @@ window.addEventListener("blur", () => paused = true);
 canvas.width = options.worldSize.x * options.scale;
 canvas.height = options.worldSize.y * options.scale;
 draw();
+
+const ws = new WebSocket("ws://localhost:1338");
+ws.onmessage = msg => {
+	const data = JSON.parse(msg.data);
+	const vector = data[Object.keys(data)[0]];
+	gravity = { x: vector[0], y: vector[1] * -1 };
+};
+ws.onopen = () => setInterval(() => ws.send("get"), 100);
