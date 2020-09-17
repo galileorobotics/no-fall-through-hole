@@ -6,8 +6,8 @@ const options = {
 	scale: 50,
 	lineWidth: 0.1,
 	ballColor: "blue",
-	holeColor: "brown",
-	wallColor: "orange",
+	holeColor: "red",
+	wallColor: "black",
 	goalColor: "green",
 };
 
@@ -124,6 +124,7 @@ const draw = () => {
 	// Draw walls
 	ctx.lineCap = "round";
 	ctx.lineWidth = options.lineWidth;
+	ctx.strokeStyle = options.wallColor;
 	for (let wall of walls) {
 		ctx.beginPath();
 		ctx.moveTo(wall.position.x, wall.position.y);
