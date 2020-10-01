@@ -5,19 +5,13 @@ const options = {
 	worldSize: { x: 10, y: 10 },
 	scale: 50,
 	lineWidth: 0.1,
-	ballColor: "blue",
+	radius: 0.4,
 	holeColor: "red",
 	wallColor: "black",
 	goalColor: "green",
 };
 
-const ball = {
-	position: { x: 1, y: 1 },
-	velocity: { x: 0, y: 0 },
-	radius: 0.4,
-};
-
-let gravity = { x: 0, y: 0 };
+const balls = {};
 
 const walls = [
 	{ position: { x: 0, y: 0 }, direction: { x: 1, y: 0 }, length: options.worldSize.x },
@@ -63,33 +57,41 @@ const update = () => {
 	if (paused)
 		return;
 
-	for (let wall of walls) {
-		if (wallDist(wall, ball.position) < ball.radius) {
-			const d = ball.velocity;
-			const n = Vec.normalize(Vec.rotate(wall.direction, 0.5 * Math.PI));
-			ball.velocity = Vec.subtract(d, Vec.scale(n, 2 * Vec.dot(d, n)));
-			ball.position = Vec.add(ball.position, Vec.scale(ball.velocity, 0.0001));
-		}
-	}
+	for (let peer of Object.keys(balls)) {
+		const ball = balls[peer];
 
-	for (let hole of holes) {
-		if (Vec.distance(hole, ball.position) < ball.radius) {
-			alert("you lose");
+		// Wall collisions
+		for (let wall of walls) {
+			if (wallDist(wall, ball.position) < options.radius) {
+				const d = ball.velocity;
+				const n = Vec.normalize(Vec.rotate(wall.direction, 0.5 * Math.PI));
+				ball.velocity = Vec.subtract(d, Vec.scale(n, 2 * Vec.dot(d, n)));
+				ball.position = Vec.add(ball.position, Vec.scale(ball.velocity, 0.0001));
+			}
+		}
+
+		// Check for lose
+		for (let hole of holes) {
+			if (Vec.distance(hole, ball.position) < options.radius) {
+				alert("you lose");
+				location.reload();
+			}
+		}
+
+		// Check for win
+		if (ball.position.x > goal.position.x &&
+			ball.position.x < goal.position.x + goal.size.x &&
+			ball.position.y > goal.position.y &&
+			ball.position.y < goal.position.y + goal.size.y) {
+			alert("you win");
 			location.reload();
 		}
-	}
 
-	if (ball.position.x > goal.position.x &&
-		ball.position.x < goal.position.x + goal.size.x &&
-		ball.position.y > goal.position.y &&
-		ball.position.y < goal.position.y + goal.size.y) {
-		alert("you win");
-		location.reload();
+		// Update ball physics
+		ball.velocity = Vec.add(ball.velocity, Vec.scale(ball.input, delta / 1000));
+		ball.velocity = Vec.scale(ball.velocity, 0.98);
+		ball.position = Vec.add(ball.position, Vec.scale(ball.velocity, delta / 1000));
 	}
-
-	ball.velocity = Vec.add(ball.velocity, Vec.scale(gravity, delta / 1000));
-	ball.velocity = Vec.scale(ball.velocity, 0.98);
-	ball.position = Vec.add(ball.position, Vec.scale(ball.velocity, delta / 1000));
 };
 
 const wallDist = (wall, point) => {
@@ -109,7 +111,7 @@ const draw = () => {
 	// Draw holes
 	for (let hole of holes) {
 		ctx.beginPath();
-		ctx.arc(hole.x, hole.y, ball.radius, 0, 2 * Math.PI);
+		ctx.arc(hole.x, hole.y, options.radius, 0, 2 * Math.PI);
 		ctx.fillStyle = options.holeColor;
 		ctx.fill();
 	}
@@ -118,11 +120,14 @@ const draw = () => {
 	ctx.fillStyle = options.goalColor;
 	ctx.fillRect(goal.position.x, goal.position.y, goal.size.x, goal.size.y);
 
-	// Draw ball
-	ctx.beginPath();
-	ctx.arc(ball.position.x, ball.position.y, ball.radius, 0, 2 * Math.PI);
-	ctx.fillStyle = options.ballColor;
-	ctx.fill();
+	// Draw balls
+	for (let peer of Object.keys(balls)) {
+		const ball = balls[peer];
+		ctx.beginPath();
+		ctx.arc(ball.position.x, ball.position.y, options.radius, 0, 2 * Math.PI);
+		ctx.fillStyle = ball.color;
+		ctx.fill();
+	}
 
 	// Draw walls
 	ctx.lineCap = "round";
@@ -150,7 +155,28 @@ draw();
 const ws = new WebSocket("ws://localhost:1338");
 ws.onmessage = msg => {
 	const data = JSON.parse(msg.data);
-	const vector = data[Object.keys(data)[0]];
-	gravity = { x: vector[0], y: vector[1] * -1 };
+	
+	for (let peer of Object.keys(data)) {
+		const vector = data[peer];
+		if (balls[peer]) {
+			// Update existing peer
+			balls[peer].input = { x: vector[0], y: vector[1] * -1 };
+		} else {
+			// Add new peer
+			balls[peer] = {
+				position: {x: 1, y: 1},
+				velocity: {x: 0, y: 0},
+				input: {x: 0, y: 0},
+				color: `hsl(${Math.round(Math.random() * 360)}deg, 80%, 50%)`
+			};
+		}
+	}
+
+	// Remove old peers
+	for (let peer of Object.keys(ball)) {
+		if (!data[peer]) {
+			delete balls[peer];
+		}
+	}
 };
 ws.onopen = () => setInterval(() => ws.send("get"), 100);
