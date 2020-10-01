@@ -173,7 +173,7 @@ ws.onmessage = msg => {
 	}
 
 	// Remove old peers
-	for (let peer of Object.keys(ball)) {
+	for (let peer of Object.keys(balls)) {
 		if (!data[peer]) {
 			delete balls[peer];
 		}
