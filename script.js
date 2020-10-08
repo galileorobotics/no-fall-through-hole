@@ -3,6 +3,7 @@ const ctx = canvas.getContext("2d");
 
 const options = {
 	worldSize: { x: 10, y: 10 },
+	startPosition: { x: 1, y: 1 },
 	scale: 50,
 	lineWidth: 0.1,
 	radius: 0.4,
@@ -73,8 +74,8 @@ const update = () => {
 		// Check for lose
 		for (let hole of holes) {
 			if (Vec.distance(hole, ball.position) < options.radius) {
-				alert("you lose");
-				location.reload();
+				console.log("lose");
+				ball.position = options.startPosition;
 			}
 		}
 
@@ -83,8 +84,7 @@ const update = () => {
 			ball.position.x < goal.position.x + goal.size.x &&
 			ball.position.y > goal.position.y &&
 			ball.position.y < goal.position.y + goal.size.y) {
-			alert("you win");
-			location.reload();
+			console.log("win");
 		}
 
 		// Update ball physics
@@ -155,7 +155,7 @@ draw();
 const ws = new WebSocket("ws://localhost:1338");
 ws.onmessage = msg => {
 	const data = JSON.parse(msg.data);
-	
+
 	for (let peer of Object.keys(data)) {
 		const vector = data[peer];
 		if (balls[peer]) {
@@ -164,9 +164,9 @@ ws.onmessage = msg => {
 		} else {
 			// Add new peer
 			balls[peer] = {
-				position: {x: 1, y: 1},
-				velocity: {x: 0, y: 0},
-				input: {x: 0, y: 0},
+				position: options.startPosition,
+				velocity: { x: 0, y: 0 },
+				input: { x: 0, y: 0 },
 				color: `hsl(${Math.round(Math.random() * 360)}deg, 80%, 50%)`
 			};
 		}
