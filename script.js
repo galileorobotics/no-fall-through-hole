@@ -123,10 +123,21 @@ const draw = () => {
 	// Draw balls
 	for (let peer of Object.keys(balls)) {
 		const ball = balls[peer];
+
+		// Circle
 		ctx.beginPath();
 		ctx.arc(ball.position.x, ball.position.y, options.radius, 0, 2 * Math.PI);
 		ctx.fillStyle = ball.color;
 		ctx.fill();
+
+		// Velocity debug
+		const goal = Vec.add(ball.position, ball.velocity);
+		ctx.beginPath();
+		ctx.moveTo(ball.position.x, ball.position.y);
+		ctx.lineWidth = 0.1;
+		ctx.lineCap = "round";
+		ctx.lineTo(goal.x, goal.y);
+		ctx.stroke();
 	}
 
 	// Draw walls
